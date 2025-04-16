@@ -29,7 +29,7 @@ class Quadrotor6DOF(dynamics.ControlAndDisturbanceAffineDynamics):
                  max_yaw_rate=3.14,  # rad/s
                  max_yaw_accel=3.14,  # rad/s^2
                  control_mode="min",
-                 disturbance_mode=None,
+                 disturbance_mode="min",  # Changed to "min" to match control mode
                  control_space=None,
                  disturbance_space=None):
         """
@@ -41,7 +41,7 @@ class Quadrotor6DOF(dynamics.ControlAndDisturbanceAffineDynamics):
             max_yaw_rate: Maximum yaw rate (rad/s)
             max_yaw_accel: Maximum yaw acceleration (rad/s^2)
             control_mode: "min" or "max" for optimal control objective
-            disturbance_mode: None if no disturbance
+            disturbance_mode: "min" or "max" for disturbance behavior
             control_space: Optional custom control space
             disturbance_space: Optional custom disturbance space
         """
@@ -57,6 +57,13 @@ class Quadrotor6DOF(dynamics.ControlAndDisturbanceAffineDynamics):
                              -max_acceleration, -max_yaw_accel]),
                 hi=jnp.array([max_acceleration, max_acceleration, 
                              max_acceleration, max_yaw_accel])
+            )
+        
+        # Define a minimal disturbance space (required by the solver)
+        if disturbance_space is None:
+            disturbance_space = sets.Box(
+                lo=jnp.array([-0.1]),  # Small disturbance
+                hi=jnp.array([0.1])
             )
         
         super().__init__(control_mode, disturbance_mode, 
